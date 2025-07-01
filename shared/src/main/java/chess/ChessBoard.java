@@ -10,15 +10,16 @@ import java.util.Arrays;
 
     public class ChessBoard {
 
-        private ChessPiece[][] board;
+    private ChessPiece[][] board;
 
-        public ChessBoard() {
-            board = new ChessPiece[8][8];
-        }
+    public ChessBoard() {
+        board = new ChessPiece[8][8];
+    }
 
-         public ChessPiece getPiece(ChessPosition position) {
-            return board[position.getRow() - 1][position.getColumn() - 1];
-        }
+    public ChessPiece getPiece(ChessPosition position) {
+        return board[position.getRow() - 1][position.getColumn() - 1];
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *
@@ -40,11 +41,27 @@ import java.util.Arrays;
         throw new RuntimeException("Not implemented");
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ChessBoard)) return false;
+        ChessBoard that = (ChessBoard) o;
+        return Arrays.deepEquals(this.board, that.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(board);
+    }
+
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+
+        board = new ChessPiece[8][8];
     }
+
 }
