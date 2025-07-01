@@ -97,33 +97,112 @@ public class ChessPiece {
     private void addKingMoves(ChessBoard board, int row, int col, Collection<ChessMove> moves) {
         int[][] directions = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}};
         addMovesInDirections(board, row, col, moves, directions, 1);
-        private void addMovesInDirections (ChessBoard board,int row, int col, Collection<ChessMove > moves,
-        int[][] directions, int maxSteps){
-            for (int[] direction : directions) {
-                int newRow = row;
-                int newCol = col;
-                for (int step = 0; step < maxSteps; step++) {
-                    newRow += direction[0];
-                    newCol += direction[1];
-                    if (!isValidPosition(newRow, newCol)) break;
+    }
 
-                    ChessPosition endPosition = new ChessPosition(newRow, newCol);
-                    ChessPiece pieceAtPosition = board.getPiece(endPosition);
+    private void addQueenMoves(ChessBoard board, int row, int col, Collection<ChessMove> moves) {
+        int[][] directions = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}};
+        addMovesInDirections(board, row, col, moves, directions, 7);
+    }
 
-                    if (pieceAtPosition == null) {
+    private void addBishopMoves(ChessBoard board, int row, int col, Collection<ChessMove> moves) {
+        int[][] directions = {{1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
+        addMovesInDirections(board, row, col, moves, directions, 7);
+    }
+
+    private void addRookMoves(ChessBoard board, int row, int col, Collection<ChessMove> moves) {
+        int[][] directions = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+        addMovesInDirections(board, row, col, moves, directions, 7);
+    }
+
+    private void addKnightMoves(ChessBoard board, int row, int col, Collection<ChessMove> validMoves) {
+        int[][] knightMoves = {{2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
+        for (int[] move : knightMoves) {
+            int newRow = row + move[0];
+            int newCol = col + move[1];
+            if (isValidPosition(newRow, newCol)) {
+                ChessPosition endPosition = new ChessPosition(newRow, newCol);
+                ChessPiece pieceAtPosition = board.getPiece(endPosition);
+                if (pieceAtPosition == null || pieceAtPosition.getTeamColor() != pieceColor) {
+                    validMoves.add(new ChessMove(new ChessPosition(row, col), endPosition, null));
+                }
+            }
+        }
+    }
+
+    private void addPawnMoves(ChessBoard board, int row, int col, Collection<ChessMove> moves) {
+        int direction = (pieceColor == ChessGame.TeamColor.WHITE) ? 1 : -1;
+        int startRow = (pieceColor == ChessGame.TeamColor.WHITE) ? 2 : 7;
+
+        int newRow = row + direction;
+        if (isValidPosition(newRow, col)) {
+            ChessPosition endPosition = new ChessPosition(newRow, col);
+            if (board.getPiece(endPosition) == null) {
+                addPawnMove(moves, row, col, newRow, col);
+
+                if (row == startRow) {
+                    newRow = row + 2 * direction;
+                    endPosition = new ChessPosition(newRow, col);
+                    if (board.getPiece(endPosition) == null) {
                         moves.add(new ChessMove(new ChessPosition(row, col), endPosition, null));
-                    } else {
-                        if (pieceAtPosition.getTeamColor() != pieceColor) {
-                            moves.add(new ChessMove(new ChessPosition(row, col), endPosition, null));
-                        }
-                        break;
                     }
                 }
             }
         }
 
-        private boolean isValidPosition ( int row, int col){
-            return row >= 1 && row <= 8 && col >= 1 && col <= 8;
+        for (int colOffset : new int[]{-1, 1}) {
+            newRow = row + direction;
+            int newCol = col + colOffset;
+            if (isValidPosition(newRow, newCol)) {
+                ChessPosition endPosition = new ChessPosition(newRow, newCol);
+                ChessPiece pieceAtPosition = board.getPiece(endPosition);
+                if (pieceAtPosition != null && pieceAtPosition.getTeamColor() != pieceColor) {
+                    addPawnMove(moves, row, col, newRow, newCol);
+                }
+            }
         }
+    }
+
+    private void addPawnMove(Collection<ChessMove> moves, int startRow, int startCol, int endRow, int endCol) {
+        ChessPosition startPosition = new ChessPosition(startRow, startCol);
+        ChessPosition endPosition = new ChessPosition(endRow, endCol);
+
+
+        if (endRow == 8 || endRow == 1) {
+            moves.add(new ChessMove(startPosition, endPosition, PieceType.QUEEN));
+            moves.add(new ChessMove(startPosition, endPosition, PieceType.ROOK));
+            moves.add(new ChessMove(startPosition, endPosition, PieceType.BISHOP));
+            moves.add(new ChessMove(startPosition, endPosition, PieceType.KNIGHT));
+        } else {
+            moves.add(new ChessMove(startPosition, endPosition, null));
+        }
+    }
+
+    private void addMovesInDirections(ChessBoard board, int row, int col, Collection<ChessMove> moves,
+                                      int[][] directions, int maxSteps) {
+        for (int[] direction : directions) {
+            int newRow = row;
+            int newCol = col;
+            for (int step = 0; step < maxSteps; step++) {
+                newRow += direction[0];
+                newCol += direction[1];
+                if (!isValidPosition(newRow, newCol)) break;
+
+                ChessPosition endPosition = new ChessPosition(newRow, newCol);
+                ChessPiece pieceAtPosition = board.getPiece(endPosition);
+
+                if (pieceAtPosition == null) {
+                    moves.add(new ChessMove(new ChessPosition(row, col), endPosition, null));
+                } else {
+                    if (pieceAtPosition.getTeamColor() != pieceColor) {
+                        moves.add(new ChessMove(new ChessPosition(row, col), endPosition, null));
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    private boolean isValidPosition(int row, int col) {
+        return row >= 1 && row <= 8 && col >= 1 && col <= 8;
     }
 }
