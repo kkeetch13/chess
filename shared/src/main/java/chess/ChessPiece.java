@@ -93,4 +93,37 @@ public class ChessPiece {
 
         return moves;
     }
+
+    private void addKingMoves(ChessBoard board, int row, int col, Collection<ChessMove> moves) {
+        int[][] directions = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}};
+        addMovesInDirections(board, row, col, moves, directions, 1);
+        private void addMovesInDirections (ChessBoard board,int row, int col, Collection<ChessMove > moves,
+        int[][] directions, int maxSteps){
+            for (int[] direction : directions) {
+                int newRow = row;
+                int newCol = col;
+                for (int step = 0; step < maxSteps; step++) {
+                    newRow += direction[0];
+                    newCol += direction[1];
+                    if (!isValidPosition(newRow, newCol)) break;
+
+                    ChessPosition endPosition = new ChessPosition(newRow, newCol);
+                    ChessPiece pieceAtPosition = board.getPiece(endPosition);
+
+                    if (pieceAtPosition == null) {
+                        moves.add(new ChessMove(new ChessPosition(row, col), endPosition, null));
+                    } else {
+                        if (pieceAtPosition.getTeamColor() != pieceColor) {
+                            moves.add(new ChessMove(new ChessPosition(row, col), endPosition, null));
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        private boolean isValidPosition ( int row, int col){
+            return row >= 1 && row <= 8 && col >= 1 && col <= 8;
+        }
+    }
 }
